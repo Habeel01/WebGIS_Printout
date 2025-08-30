@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css"
+        integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <link rel="stylesheet" href="./lib/leaflet-measure.css">
+    <!-- for search button -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <!-- Include Leaflet Geolocate CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.81.1/dist/L.Control.Locate.min.css"
+        rel="stylesheet">
+
+    <!-- Include Leaflet Draw CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.2/leaflet.draw.css" />
+    
+    <title>pratics</title>
+ <style>
+        html,
+        body,
+        #map {
+            width: 100%;
+            height: 100%;
+            margin: 0px;
+            padding: 0px;
+        }
+    </style>
+<!-- Add this CSS for a nice legend box -->
+<style>
+.leaflet-control.legend-box {
+    background: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    font-size: 14px;
+    line-height: 1.5;
+    border: 1px solid #bbb;
+    color: #333;
+}
+.leaflet-control.legend-box i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.8;
+    border-radius: 3px;
+    border: 1px solid #999;
+}
+</style>
+</head>
+
+<body>
+    
+<script>
+    // ...existing code...
+
+// Example: Define your layers and their legend info
+var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { /* ... */ });
+var Esri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { /* ... */ });
+var CartoDB_Positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { /* ... */ });
+
+var myGeoJsonLayer = L.geoJSON(geojson, {
+    style: { color: 'blue', fillColor: 'yellow', fillOpacity: 0.5 }
+});
+
+var baseLayers = {
+    "OSM": osm,
+    "Esri": Esri,
+    "CartoDB_Positron": CartoDB_Positron
+};
+var overlays = {
+    "My GeoJSON": myGeoJsonLayer
+};
+
+L.control.layers(baseLayers, overlays).addTo(map);
+
+// Legend info for each layer
+var legendInfo = {
+    "OSM": { color: "#3388ff", label: "OpenStreetMap" },
+    "Esri": { color: "#888888", label: "Esri Imagery" },
+    "CartoDB_Positron": { color: "#f4f4f4", label: "CartoDB Positron" },
+    "My GeoJSON": { color: "yellow", label: "My GeoJSON Layer" }
+};
+
+// Create the legend control
+var legend = L.control({ position: 'bottomleft' });
+
+legend.onAdd = function (map) {
+    this._div = L.DomUtil.create('div', 'legend-box leaflet-control');
+    this.update();
+    return this._div;
+};
+
+// Update legend based on visible layers
+legend.update = function () {
+    var content = '<b>Legend</b><br>';
+    map.eachLayer(function(layer) {
+        for (var key in overlays) {
+            if (layer === overlays[key]) {
+                var info = legendInfo[key];
+                content += '<i style="background:' + info.color + '"></i> ' + info.label + '<br>';
+            }
+        }
+        for (var key in baseLayers) {
+            if (layer === baseLayers[key]) {
+                var info = legendInfo[key];
+                content += '<i style="background:' + info.color + '"></i> ' + info.label + '<br>';
+            }
+        }
+    });
+    this._div.innerHTML = content;
+};
+
+legend.addTo(map);
+
+// Listen for layer changes and update legend
+map.on('layeradd layerremove', function() {
+    legend.update();
+});
+
+// ...existing code...
+</script>
+</body>
+</html>
